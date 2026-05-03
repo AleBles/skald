@@ -16,7 +16,12 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
+        if: github.actor != 'dependabot[bot]'
         run: bun install --frozen-lockfile
+
+      - name: Install dependencies (Dependabot, regen lockfile)
+        if: github.actor == 'dependabot[bot]'
+        run: bun install
 
       - name: Lint
         run: bunx biome check src/
