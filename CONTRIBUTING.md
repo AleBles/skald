@@ -5,7 +5,7 @@ Thanks for considering a contribution. This is a small project; the bar for chan
 ## Setup
 
 ```bash
-git clone https://github.com/USER/skald
+git clone https://github.com/alebles/skald
 cd skald
 bun install
 cp config.example.yaml skald.yaml   # then fill in your tokens

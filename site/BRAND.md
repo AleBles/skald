@@ -73,4 +73,4 @@ git push origin gh-pages
 
 Then in GitHub: Settings → Pages → source: `gh-pages` branch.
 
-Update the `https://github.com/yourname/skald` links in `index.html` before deploying.
+Update the `https://github.com/AleBles/skald` links in `index.html` before deploying.

@@ -55,7 +55,10 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  .container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
+  .container { max-width: 760px;
+    /*padding: 0 1.5rem;*/
+    margin: 14px auto 0;
+  }
 
   h1, h2, h3 { font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; }
   h2 { font-size: 1.375rem; margin-bottom: 1.25rem; }
@@ -64,7 +67,7 @@
   p:last-child { margin-bottom: 0; }
 
   /* ---------- hero ---------- */
-  .hero { text-align: center; padding: 6rem 0 5rem; }
+  .hero { text-align: center; padding: 2rem 0; }
   .hero-mark { width: 96px; margin: 0 auto 2rem; display: block; }
   .hero h1 {
     font-size: clamp(3.5rem, 8vw, 5rem);
@@ -98,7 +101,7 @@
   .cta-secondary:hover { background: var(--surface); }
 
   /* ---------- sections ---------- */
-  section { padding: 4rem 0; border-top: 1px solid var(--border); }
+  section { padding: 2rem 0; border-top: 1px solid var(--border); }
 
   /* ---------- transcript ---------- */
   .transcript {
@@ -110,11 +113,24 @@
     font-size: 0.875rem;
     line-height: 1.7;
   }
-  .transcript .line { display: grid; grid-template-columns: auto 1fr; gap: 1rem; margin-bottom: 0.875rem; }
+  .transcript .line { display: grid; grid-template-columns: auto auto 1fr; gap: 0.75rem; align-items: baseline; margin-bottom: 0.875rem; }
   .transcript .line:last-child { margin-bottom: 0; }
   .transcript .ts { color: rgba(250, 246, 237, 0.4); white-space: nowrap; }
   .transcript .narration { color: var(--code-text); }
-  .transcript .narration::before { content: "▶ "; color: #f59e0b; }
+  .transcript .play {
+    background: transparent;
+    border: 0;
+    color: #f59e0b;
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
+    line-height: 1;
+    transition: transform 0.15s, opacity 0.15s;
+  }
+  .transcript .play:hover { transform: scale(1.2); }
+  .transcript .play:focus-visible { outline: 2px solid #f59e0b; outline-offset: 3px; border-radius: 2px; }
+  .transcript .play.playing { color: #fbbf24; animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: 0.5; } }
 
   /* ---------- code ---------- */
   pre {
@@ -197,23 +213,28 @@
   <div class="transcript">
     <div class="line">
       <span class="ts">09:14</span>
-      <span class="narration">A new pull request enters the arena — number forty-two from elendia, fixing voice synthesis on long sessions.</span>
+      <button class="play" type="button" data-audio="audio/01.mp3" aria-label="Play narration">▶</button>
+      <span class="narration">A modest push lands on the audio-playback branch. Three commits, no fuss, no announcement.</span>
     </div>
     <div class="line">
       <span class="ts">09:22</span>
-      <span class="narration">CI just turned green on the bidding branch. Twenty-seven tests passed, no regressions.</span>
+      <button class="play" type="button" data-audio="audio/02.mp3" aria-label="Play narration">▶</button>
+      <span class="narration">And here, surfacing at last from weeks of patient work — pull request forty-two. The voice synthesis fix, finally up for review.</span>
     </div>
     <div class="line">
       <span class="ts">09:38</span>
-      <span class="narration">Issue opened by mistress-bode: memory leak in long-running narrators. Tagged as a bug.</span>
+      <button class="play" type="button" data-audio="audio/03.mp3" aria-label="Play narration">▶</button>
+      <span class="narration">An issue surfaces. Memory, it transpires, leaks from the narrator on long runs. A familiar pattern. Now, a tracked one.</span>
     </div>
     <div class="line">
       <span class="ts">09:51</span>
-      <span class="narration">Pull request forty-two has been merged. The voice synthesis fix is now in main.</span>
+      <button class="play" type="button" data-audio="audio/04.mp3" aria-label="Play narration">▶</button>
+      <span class="narration">Quietly, forty-two slips into main. The fix takes its place. The voice is whole again.</span>
     </div>
     <div class="line">
       <span class="ts">10:04</span>
-      <span class="narration">Release one point two zero is upon us. The skald speaks anew.</span>
+      <button class="play" type="button" data-audio="audio/05.mp3" aria-label="Play narration">▶</button>
+      <span class="narration">Version one point two zero — released into the wild. A few stones on the cairn. Onward.</span>
     </div>
   </div>
 </section>
@@ -264,8 +285,26 @@ bun start</pre>
     <line x1="0" y1="7" x2="9" y2="11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
   </svg>
   <p>Named for the Old Norse poet-narrators of court — keepers of deeds in verse.</p>
-  <p><a href="https://github.com/AleBles/skald">github.com/yourname/skald</a></p>
+  <p><a href="https://github.com/AleBles/skald">github.com/AleBles/skald</a></p>
 </footer>
+
+<script>
+(() => {
+  let active = null;
+  for (const btn of document.querySelectorAll(".transcript .play")) {
+    const audio = new Audio(btn.getAttribute("data-audio"));
+    audio.preload = "none";
+    const reset = () => { btn.classList.remove("playing"); btn.textContent = "▶"; if (active && active.audio === audio) active = null; };
+    audio.addEventListener("ended", reset);
+    audio.addEventListener("pause", () => { if (audio.currentTime === 0) reset(); });
+    btn.addEventListener("click", () => {
+      if (active && active.audio !== audio) { active.audio.pause(); active.audio.currentTime = 0; }
+      if (audio.paused) { audio.play().catch(() => reset()); btn.classList.add("playing"); btn.textContent = "❚❚"; active = { audio, btn }; }
+      else { audio.pause(); audio.currentTime = 0; }
+    });
+  }
+})();
+</script>
 
 </body>
 </html>
