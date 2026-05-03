@@ -1,8 +1,16 @@
-# Skald
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="site/logo-dark.svg">
+    <img src="site/logo.svg" alt="skald" width="320">
+  </picture>
+</p>
 
-[![CI](https://github.com/USER/skald/actions/workflows/ci.yml/badge.svg)](https://github.com/USER/skald/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Bun](https://img.shields.io/badge/runtime-bun-black.svg)](https://bun.sh)
+<p align="center">
+  <a href="https://github.com/alebles/skald/actions/workflows/ci.yml"><img src="https://github.com/alebles/skald/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://bun.sh"><img src="https://img.shields.io/badge/runtime-bun-black.svg" alt="Bun"></a>
+  <a href="https://skald.bles.nu"><img src="https://img.shields.io/badge/site-skald.bles.nu-d97706.svg" alt="Site"></a>
+</p>
 
 AI voice narrator for repo activity. Polls GitHub or GitLab feeds and narrates events like a live commentator over your speakers.
 

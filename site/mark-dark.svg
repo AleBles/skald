@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -12 144 164" fill="none">
+  <title>skald</title>
+  <line x1="0" y1="0" x2="0" y2="140" stroke="#faf6ed" stroke-width="18" stroke-linecap="round"/>
+  <line x1="0" y1="20" x2="60" y2="55" stroke="#faf6ed" stroke-width="18" stroke-linecap="round"/>
+  <line x1="0" y1="50" x2="60" y2="85" stroke="#faf6ed" stroke-width="18" stroke-linecap="round"/>
+  <path d="M 88 57 A 18 18 0 0 1 88 83" stroke="#f59e0b" stroke-width="8" stroke-linecap="round"/>
+  <path d="M 98 47 A 33 33 0 0 1 98 93" stroke="#f59e0b" stroke-width="8" stroke-linecap="round"/>
+  <path d="M 110 35 A 50 50 0 0 1 110 105" stroke="#f59e0b" stroke-width="8" stroke-linecap="round"/>
+</svg>
