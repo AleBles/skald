@@ -1,7 +1,7 @@
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { loadConfig } from "../src/config/loader.ts";
-import { createSpeechProvider } from "../src/providers/index.ts";
+import { createSpeechProvider } from "../src/providers";
 
 const LINES = [
     "A modest push lands on the audio-playback branch. Three commits, no fuss, no announcement.",
