@@ -55,7 +55,10 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  .container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
+  .container { max-width: 760px;
+    /*padding: 0 1.5rem;*/
+    margin: 14px auto 0;
+  }
 
   h1, h2, h3 { font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; }
   h2 { font-size: 1.375rem; margin-bottom: 1.25rem; }
@@ -98,7 +101,7 @@
   .cta-secondary:hover { background: var(--surface); }
 
   /* ---------- sections ---------- */
-  section { padding: 4rem 0; border-top: 1px solid var(--border); }
+  section { padding: 2rem 0; border-top: 1px solid var(--border); }
 
   /* ---------- transcript ---------- */
   .transcript {
@@ -197,23 +200,23 @@
   <div class="transcript">
     <div class="line">
       <span class="ts">09:14</span>
-      <span class="narration">A new pull request enters the arena — number forty-two from elendia, fixing voice synthesis on long sessions.</span>
+      <span class="narration">A modest push lands on the audio-playback branch. Three commits, no fuss, no announcement.</span>
     </div>
     <div class="line">
       <span class="ts">09:22</span>
-      <span class="narration">CI just turned green on the bidding branch. Twenty-seven tests passed, no regressions.</span>
+      <span class="narration">And here, surfacing at last from weeks of patient work — pull request forty-two. The voice synthesis fix, finally up for review.</span>
     </div>
     <div class="line">
       <span class="ts">09:38</span>
-      <span class="narration">Issue opened by mistress-bode: memory leak in long-running narrators. Tagged as a bug.</span>
+      <span class="narration">An issue surfaces. Memory, it transpires, leaks from the narrator on long runs. A familiar pattern. Now, a tracked one.</span>
     </div>
     <div class="line">
       <span class="ts">09:51</span>
-      <span class="narration">Pull request forty-two has been merged. The voice synthesis fix is now in main.</span>
+      <span class="narration">Quietly, forty-two slips into main. The fix takes its place. The voice is whole again.</span>
     </div>
     <div class="line">
       <span class="ts">10:04</span>
-      <span class="narration">Release one point two zero is upon us. The skald speaks anew.</span>
+      <span class="narration">Version one point two zero — released into the wild. A few stones on the cairn. Onward.</span>
     </div>
   </div>
 </section>
@@ -264,7 +267,7 @@ bun start</pre>
     <line x1="0" y1="7" x2="9" y2="11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
   </svg>
   <p>Named for the Old Norse poet-narrators of court — keepers of deeds in verse.</p>
-  <p><a href="https://github.com/AleBles/skald">github.com/yourname/skald</a></p>
+  <p><a href="https://github.com/AleBles/skald">github.com/AleBles/skald</a></p>
 </footer>
 
 </body>

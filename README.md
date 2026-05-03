@@ -18,10 +18,10 @@ AI voice narrator for repo activity. Polls GitHub or GitLab feeds and narrates e
 
 ## Install
 
-Download a prebuilt binary for your platform from the [latest release](https://github.com/USER/skald/releases/latest), or run from source:
+Download a prebuilt binary for your platform from the [latest release](https://github.com/alebles/skald/releases/latest), or run from source:
 
 ```bash
-git clone https://github.com/USER/skald
+git clone https://github.com/alebles/skald
 cd skald
 bun install
 ```
