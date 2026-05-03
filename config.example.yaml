@@ -1,0 +1,112 @@
+# Feed source - GitHub or GitLab
+#
+# Two types supported:
+#   type: github  - polls api.github.com events. Token optional but recommended
+#                   (raises rate limit from 60/h to 5000/h).
+#   type: gitlab  - polls Atom feeds on a GitLab instance. Requires a feed token
+#                   from User Settings > Feed token.
+feed:
+  type: github
+  token: your-github-token         # or set GITHUB_TOKEN env var; optional for public feeds
+
+  # Feed paths. For type: github, accepts:
+  #   octocat                          - shorthand for users/octocat
+  #   anthropics/claude-code           - shorthand for repos/...
+  #   users/octocat                    - explicit user events
+  #   orgs/anthropics                  - explicit org events
+  #   repos/anthropics/claude-code     - explicit repo events
+  feeds:
+    - users/octocat
+    - repos/oven-sh/bun
+
+  # Filter event types (empty = all events for the source)
+  # GitHub options:  pushed, commented, opened, closed, merged, issues,
+  #                  merge_requests, released
+  # GitLab options:  pushed, commits, merged, commented, opened, closed,
+  #                  pipelines, issues, merge_requests, packages
+  events:
+    - pushed
+    - merged
+
+  # Users to exclude from narration (e.g. bots)
+  exclude_users:
+    - dependabot
+    - renovate
+
+  # How often to check for new events (default: 30s)
+  poll_interval: 30s
+
+  # GitLab example (uncomment instead of github):
+  # type: gitlab
+  # url: https://gitlab.com/
+  # feed-token: your-feed-token
+  # feeds:
+  #   - my-group
+  #   - my-org/my-project
+  # events: [pushed, merged]
+  # exclude_users: [ci-bot]
+  # poll_interval: 30s
+
+# AI providers
+providers:
+  # Chat completions - used for narration and catch-up summaries
+  # Two types supported:
+  #   type: openai       - any OpenAI-compatible /v1/chat/completions endpoint
+  #                        (OpenAI, OpenRouter, Ollama, Azure, etc.)
+  #   type: claude-code  - shells out to the local `claude` CLI in headless
+  #                        mode. Uses whatever auth/account the CLI has.
+  chat:
+    type: openai
+    base_url: https://api.openai.com/v1
+    api_key: your-chat-api-key       # or set CHAT_API_KEY env var
+    model: gpt-4o-mini
+
+    # Example: use the local `claude` CLI instead (no API key needed)
+    # type: claude-code
+    # model: sonnet                  # optional: sonnet | opus | haiku | full id
+
+  # Text-to-speech - used for voice narration
+  # Two types supported:
+  #   type: openai  - any OpenAI-compatible /v1/audio/speech endpoint
+  #   type: gemini  - Google Gemini TTS via generativelanguage.googleapis.com.
+  #                   Returns 24kHz PCM that we wrap into WAV locally. Speed is
+  #                   emulated via natural-language style hints.
+  speech:
+    type: openai
+    base_url: https://api.openai.com/v1
+    api_key: your-speech-api-key     # or set SPEECH_API_KEY env var
+    model: gpt-4o-mini-tts
+    voice: alloy                     # alloy, echo, fable, onyx, nova, shimmer
+    speed: 1.0                       # 0.25 - 4.0
+
+    # Example: Google Gemini TTS
+    # type: gemini
+    # api_key: your-google-api-key
+    # model: gemini-2.5-flash-preview-tts
+    # voice: Kore                    # Zephyr, Puck, Charon, Kore, Fenrir, Leda, Orus, Aoede, ...
+    # speed: 1.0
+
+narrator:
+  # Personality prompt for the AI narrator
+  # Examples:
+  #   "sarcastic british sports commentator"
+  #   "enthusiastic anime narrator"
+  #   "monotone nature documentary narrator"
+  #   "overly dramatic telenovela narrator"
+  personality: monotone british nature documentary narrator
+
+# Auto-managed: timestamp of the last narrated message (used for catch-up on boot)
+# last_message: "2026-04-02T10:30:00.000Z"
+
+# Known authors - auto-populated when new usernames appear in events
+# You can also add them manually here
+authors:
+  # octocat:
+  #   name: The Octocat
+  #   job_title: Mascot
+
+# Known projects - auto-populated when new project paths appear in events
+projects:
+  # octocat/Hello-World:
+  #   name: Hello World
+  #   description: The first repo
