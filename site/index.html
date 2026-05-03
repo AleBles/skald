@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>skald — AI voice narrator for repo activity</title>
+<meta name="description" content="Polls GitHub or GitLab feeds and narrates events like a live commentator over your speakers.">
+
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+<meta property="og:title" content="skald">
+<meta property="og:description" content="AI voice narrator for repo activity. Polls GitHub or GitLab feeds and narrates events like a live commentator over your speakers.">
+<meta property="og:image" content="social-card.svg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #faf6ed;
+    --surface: #f3ecd9;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #d97706;
+    --border: rgba(15, 23, 42, 0.08);
+    --code-bg: #0f172a;
+    --code-text: #faf6ed;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --text: #faf6ed;
+      --muted: #94a3b8;
+      --accent: #f59e0b;
+      --border: rgba(250, 246, 237, 0.1);
+      --code-bg: #1e293b;
+      --code-text: #faf6ed;
+    }
+  }
+
+  html { font-size: 16px; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
+
+  h1, h2, h3 { font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; }
+  h2 { font-size: 1.375rem; margin-bottom: 1.25rem; }
+  h3 { font-size: 1.0625rem; margin-bottom: 0.375rem; }
+  p { margin-bottom: 0.75rem; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ---------- hero ---------- */
+  .hero { text-align: center; padding: 6rem 0 5rem; }
+  .hero-mark { width: 96px; margin: 0 auto 2rem; display: block; }
+  .hero h1 {
+    font-size: clamp(3.5rem, 8vw, 5rem);
+    letter-spacing: -0.05em;
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+  }
+  .hero .tagline {
+    font-size: 1.125rem;
+    color: var(--muted);
+    max-width: 480px;
+    margin: 0 auto 2.5rem;
+  }
+  .cta-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    transition: opacity 0.15s, transform 0.15s;
+    border: 1px solid transparent;
+  }
+  .cta:hover { transform: translateY(-1px); }
+  .cta-primary { background: var(--text); color: var(--bg); }
+  .cta-primary:hover { opacity: 0.9; }
+  .cta-secondary { background: transparent; color: var(--text); border-color: var(--border); }
+  .cta-secondary:hover { background: var(--surface); }
+
+  /* ---------- sections ---------- */
+  section { padding: 4rem 0; border-top: 1px solid var(--border); }
+
+  /* ---------- transcript ---------- */
+  .transcript {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 1.75rem;
+    border-radius: 12px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+  .transcript .line { display: grid; grid-template-columns: auto 1fr; gap: 1rem; margin-bottom: 0.875rem; }
+  .transcript .line:last-child { margin-bottom: 0; }
+  .transcript .ts { color: rgba(250, 246, 237, 0.4); white-space: nowrap; }
+  .transcript .narration { color: var(--code-text); }
+  .transcript .narration::before { content: "▶ "; color: #f59e0b; }
+
+  /* ---------- code ---------- */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 1.25rem 1.5rem;
+    border-radius: 12px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+  pre .comment { color: rgba(250, 246, 237, 0.45); }
+  .followup { margin-top: 1rem; color: var(--muted); font-size: 0.9375rem; }
+
+  /* ---------- features ---------- */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem 2.5rem;
+    margin-top: 1.5rem;
+  }
+  .feature h3 { color: var(--accent); }
+  .feature p { color: var(--muted); font-size: 0.9375rem; line-height: 1.55; }
+
+  /* ---------- footer ---------- */
+  footer {
+    text-align: center;
+    padding: 3rem 1.5rem 4rem;
+    color: var(--muted);
+    font-size: 0.875rem;
+    border-top: 1px solid var(--border);
+  }
+  footer p + p { margin-top: 0.375rem; }
+  footer a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); }
+  footer a:hover { border-color: var(--text); }
+  .rune-divider {
+    display: block;
+    margin: 0 auto 1.25rem;
+    color: var(--muted);
+    opacity: 0.4;
+  }
+
+  .hero-mark .rune { stroke: currentColor; }
+  .hero-mark .arc { stroke: var(--accent); }
+
+  code {
+    font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+    background: var(--surface);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.875em;
+  }
+</style>
+</head>
+<body>
+
+<main>
+
+<header class="hero container">
+  <svg class="hero-mark" viewBox="-12 -12 144 164" fill="none" aria-label="skald logo">
+    <line class="rune" x1="0" y1="0" x2="0" y2="140" stroke-width="18" stroke-linecap="round"/>
+    <line class="rune" x1="0" y1="20" x2="60" y2="55" stroke-width="18" stroke-linecap="round"/>
+    <line class="rune" x1="0" y1="50" x2="60" y2="85" stroke-width="18" stroke-linecap="round"/>
+    <path class="arc" d="M 88 57 A 18 18 0 0 1 88 83" stroke-width="8" stroke-linecap="round"/>
+    <path class="arc" d="M 98 47 A 33 33 0 0 1 98 93" stroke-width="8" stroke-linecap="round"/>
+    <path class="arc" d="M 110 35 A 50 50 0 0 1 110 105" stroke-width="8" stroke-linecap="round"/>
+  </svg>
+  <h1>skald</h1>
+  <p class="tagline">AI voice narrator for repo activity. Polls GitHub or GitLab feeds and narrates events like a live commentator — over your speakers.</p>
+  <div class="cta-row">
+    <a class="cta cta-primary" href="https://github.com/AleBles/skald">View on GitHub →</a>
+    <a class="cta cta-secondary" href="#quickstart">Quick start</a>
+  </div>
+</header>
+
+<section class="container">
+  <h2>What it sounds like</h2>
+  <p style="color: var(--muted); margin-bottom: 1.5rem;">A typical morning of activity, narrated:</p>
+  <div class="transcript">
+    <div class="line">
+      <span class="ts">09:14</span>
+      <span class="narration">A new pull request enters the arena — number forty-two from elendia, fixing voice synthesis on long sessions.</span>
+    </div>
+    <div class="line">
+      <span class="ts">09:22</span>
+      <span class="narration">CI just turned green on the bidding branch. Twenty-seven tests passed, no regressions.</span>
+    </div>
+    <div class="line">
+      <span class="ts">09:38</span>
+      <span class="narration">Issue opened by mistress-bode: memory leak in long-running narrators. Tagged as a bug.</span>
+    </div>
+    <div class="line">
+      <span class="ts">09:51</span>
+      <span class="narration">Pull request forty-two has been merged. The voice synthesis fix is now in main.</span>
+    </div>
+    <div class="line">
+      <span class="ts">10:04</span>
+      <span class="narration">Release one point two zero is upon us. The skald speaks anew.</span>
+    </div>
+  </div>
+</section>
+
+<section class="container" id="quickstart">
+  <h2>Quick start</h2>
+<pre><span class="comment"># clone and install</span>
+git clone https://github.com/AleBles/skald
+cd skald
+bun install
+
+<span class="comment"># copy the example config and edit feeds + provider keys</span>
+cp config.example.yaml skald.yaml
+
+<span class="comment"># start narrating</span>
+bun start</pre>
+  <p class="followup">Configure GitHub or GitLab feeds and a chat + speech provider in <code>skald.yaml</code>. Bring your own keys for OpenAI, Gemini, Ollama, or the local <code>claude</code> CLI.</p>
+</section>
+
+<section class="container">
+  <h2>Features</h2>
+  <div class="features">
+    <div class="feature">
+      <h3>GitHub &amp; GitLab</h3>
+      <p>Polls feeds from either platform with a unified event model. No webhooks, no inbound network needed.</p>
+    </div>
+    <div class="feature">
+      <h3>Live commentary</h3>
+      <p>Events become natural-language narrations — not robotic notification pings.</p>
+    </div>
+    <div class="feature">
+      <h3>Voice agnostic</h3>
+      <p>Pluggable TTS backends. System voices, ElevenLabs, OpenAI, or anything that speaks.</p>
+    </div>
+    <div class="feature">
+      <h3>Tunable</h3>
+      <p>Filter events, adjust verbosity, write your own narration templates. Make it dry, dramatic, or anywhere between.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <svg class="rune-divider" width="22" height="26" viewBox="-2 -2 18 22" fill="none" aria-hidden="true">
+    <line x1="0" y1="0" x2="0" y2="18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="0" y1="3" x2="9" y2="7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="0" y1="7" x2="9" y2="11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>
+  <p>Named for the Old Norse poet-narrators of court — keepers of deeds in verse.</p>
+  <p><a href="https://github.com/AleBles/skald">github.com/yourname/skald</a></p>
+</footer>
+
+</body>
+</html>
