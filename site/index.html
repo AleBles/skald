@@ -3,16 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>skald — AI voice narrator for repo activity</title>
-<meta name="description" content="Polls GitHub or GitLab feeds and narrates events like a live commentator over your speakers.">
+<title>skald — AI voice narrator for GitHub and GitLab repo activity</title>
+<meta name="description" content="Skald turns GitHub and GitLab events into spoken commentary. A terminal voice narrator for your repo activity — pluggable AI chat, pluggable TTS, no webhooks.">
+<meta name="keywords" content="skald, github narrator, gitlab narrator, repo voice, tts, openai tts, gemini tts, ollama, claude cli, ink, bun, repository feed, voice commentary">
 
+<link rel="canonical" href="https://skald.bles.nu/">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="favicon.svg">
 
-<meta property="og:title" content="skald">
-<meta property="og:description" content="AI voice narrator for repo activity. Polls GitHub or GitLab feeds and narrates events like a live commentator over your speakers.">
-<meta property="og:image" content="social-card.svg">
+<meta name="theme-color" content="#faf6ed" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+
+<meta property="og:title" content="skald — AI voice narrator for repo activity">
+<meta property="og:description" content="Turns GitHub or GitLab events into spoken commentary. Pluggable AI chat, pluggable TTS, no webhooks.">
+<meta property="og:image" content="https://skald.bles.nu/social-card.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:url" content="https://skald.bles.nu/">
+<meta property="og:site_name" content="skald">
 <meta property="og:type" content="website">
+
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="skald — AI voice narrator for repo activity">
+<meta name="twitter:description" content="Turns GitHub or GitLab events into spoken commentary. Pluggable AI chat, pluggable TTS, no webhooks.">
+<meta name="twitter:image" content="https://skald.bles.nu/social-card.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "skald",
+  "description": "AI voice narrator for repo activity. Polls GitHub or GitLab feeds and narrates events like a live commentator over your speakers.",
+  "url": "https://skald.bles.nu/",
+  "image": "https://skald.bles.nu/social-card.png",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Linux, macOS, Windows",
+  "license": "https://opensource.org/license/MIT",
+  "codeRepository": "https://github.com/AleBles/skald",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "Ale Bles" }
+}
+</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,6 +61,13 @@
     --border: rgba(15, 23, 42, 0.08);
     --code-bg: #0f172a;
     --code-text: #faf6ed;
+    --tui-blue: #60a5fa;
+    --tui-yellow: #facc15;
+    --tui-red: #f87171;
+    --tui-magenta: #f0abfc;
+    --tui-green: #4ade80;
+    --tui-cyan: #67e8f9;
+    --tui-dim: rgba(250, 246, 237, 0.5);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -103,33 +141,52 @@
   /* ---------- sections ---------- */
   section { padding: 2rem 0; border-top: 1px solid var(--border); }
 
-  /* ---------- transcript ---------- */
-  .transcript {
+  /* ---------- tui dashboard ---------- */
+  .tui {
     background: var(--code-bg);
     color: var(--code-text);
-    padding: 1.75rem;
     border-radius: 12px;
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
-    font-size: 0.875rem;
-    line-height: 1.7;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    container-type: inline-size;
   }
-  .transcript .line { display: grid; grid-template-columns: auto auto 1fr; gap: 0.75rem; align-items: baseline; margin-bottom: 0.875rem; }
-  .transcript .line:last-child { margin-bottom: 0; }
-  .transcript .ts { color: rgba(250, 246, 237, 0.4); white-space: nowrap; }
-  .transcript .narration { color: var(--code-text); }
-  .transcript .play {
+  .tui-panel {
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+    /* 60 chars wide at ~0.6em per char = 36em. Size font so 36em == container content width. */
+    font-size: clamp(0.7rem, calc(100cqi / 36), 1.3rem);
+    line-height: 1.4;
+    margin: 0;
+    color: var(--code-text);
+    white-space: pre;
+    background: transparent;
+    padding: 0;
+    overflow: hidden;
+  }
+  .tui .b-blue    { color: var(--tui-blue); }
+  .tui .b-yellow  { color: var(--tui-yellow); }
+  .tui .b-red     { color: var(--tui-red); }
+  .tui .b-magenta { color: var(--tui-magenta); }
+  .tui .b-green   { color: var(--tui-green); }
+  .tui .bar-y     { color: var(--tui-yellow); }
+  .tui .bar-r     { color: var(--tui-red); }
+  .tui .narration { color: var(--tui-cyan); }
+  .tui .dim       { color: var(--tui-dim); }
+  .tui .play {
+    display: inline-block;
+    width: 1ch;
+    text-align: center;
     background: transparent;
     border: 0;
-    color: #f59e0b;
-    cursor: pointer;
+    color: var(--tui-cyan);
     padding: 0;
     font: inherit;
-    line-height: 1;
+    line-height: inherit;
+    cursor: pointer;
     transition: transform 0.15s, opacity 0.15s;
   }
-  .transcript .play:hover { transform: scale(1.2); }
-  .transcript .play:focus-visible { outline: 2px solid #f59e0b; outline-offset: 3px; border-radius: 2px; }
-  .transcript .play.playing { color: #fbbf24; animation: pulse 1.2s ease-in-out infinite; }
+  .tui .play:hover { transform: scale(1.2); }
+  .tui .play:focus-visible { outline: 2px solid var(--tui-cyan); outline-offset: 2px; border-radius: 2px; }
+  .tui .play.playing { animation: pulse 1.2s ease-in-out infinite; }
   @keyframes pulse { 50% { opacity: 0.5; } }
 
   /* ---------- code ---------- */
@@ -207,35 +264,44 @@
   </div>
 </header>
 
-<section class="container">
+<section class="container" id="sounds">
   <h2>What it sounds like</h2>
-  <p style="color: var(--muted); margin-bottom: 1.5rem;">A typical morning of activity, narrated:</p>
-  <div class="transcript">
-    <div class="line">
-      <span class="ts">09:14</span>
-      <button class="play" type="button" data-audio="audio/01.mp3" aria-label="Play narration">▶</button>
-      <span class="narration">A modest push lands on the audio-playback branch. Three commits, no fuss, no announcement.</span>
-    </div>
-    <div class="line">
-      <span class="ts">09:22</span>
-      <button class="play" type="button" data-audio="audio/02.mp3" aria-label="Play narration">▶</button>
-      <span class="narration">And here, surfacing at last from weeks of patient work — pull request forty-two. The voice synthesis fix, finally up for review.</span>
-    </div>
-    <div class="line">
-      <span class="ts">09:38</span>
-      <button class="play" type="button" data-audio="audio/03.mp3" aria-label="Play narration">▶</button>
-      <span class="narration">An issue surfaces. Memory, it transpires, leaks from the narrator on long runs. A familiar pattern. Now, a tracked one.</span>
-    </div>
-    <div class="line">
-      <span class="ts">09:51</span>
-      <button class="play" type="button" data-audio="audio/04.mp3" aria-label="Play narration">▶</button>
-      <span class="narration">Quietly, forty-two slips into main. The fix takes its place. The voice is whole again.</span>
-    </div>
-    <div class="line">
-      <span class="ts">10:04</span>
-      <button class="play" type="button" data-audio="audio/05.mp3" aria-label="Play narration">▶</button>
-      <span class="narration">Version one point two zero — released into the wild. A few stones on the cairn. Onward.</span>
-    </div>
+  <p style="color: var(--muted); margin-bottom: 1.5rem;">A typical morning of activity, narrated. Click <span style="color: var(--tui-cyan, #67e8f9);">▶</span> to play any sample.</p>
+  <div class="tui" role="img" aria-label="Skald terminal dashboard with five narration samples">
+<pre class="tui-panel"><span class="b-blue">╭─ skald ──────────────────────────────────────────────────╮</span>
+<span class="b-blue">│</span> Skald v0.5.0 - AI voice narrator for repo activity       <span class="b-blue">│</span>
+<span class="b-blue">│</span> Source: github  Feeds: oven-sh/bun  Poll: 30s            <span class="b-blue">│</span>
+<span class="b-blue">│</span> Personality: monotone british…  Mode: full               <span class="b-blue">│</span>
+<span class="b-blue">╰──────────────────────────────────────────────────────────╯</span></pre>
+<pre class="tui-panel"><span class="b-yellow">╭─ Authors ──────────────────╮</span><span class="b-red">╭─ Projects ─────────────────╮</span>
+<span class="b-yellow">│</span> Ale    <span class="bar-y">██████████</span>        2 <span class="b-yellow">│</span><span class="b-red">│</span> voice-synth <span class="bar-r">██████████</span>   2 <span class="b-red">│</span>
+<span class="b-yellow">│</span> Ragib  <span class="bar-y">██████████</span>        2 <span class="b-yellow">│</span><span class="b-red">│</span> audio-pback <span class="bar-r">█████</span>        1 <span class="b-red">│</span>
+<span class="b-yellow">│</span> Sam    <span class="bar-y">█████</span>             1 <span class="b-yellow">│</span><span class="b-red">│</span> narrator    <span class="bar-r">█████</span>        1 <span class="b-red">│</span>
+<span class="b-yellow">╰────────────────────────────╯</span><span class="b-red">╰────────────────────────────╯</span></pre>
+<pre class="tui-panel"><span class="b-magenta">╭─ Updates ────────────────────────────────────────────────╮</span>
+<span class="b-magenta">│</span> <span class="dim">[09:14] 1 new event(s) detected</span>                          <span class="b-magenta">│</span>
+<span class="b-magenta">│</span>   Ale - audio-playback                                   <span class="b-magenta">│</span>
+<span class="b-magenta">│</span> <button class="play" type="button" data-audio="audio/01.mp3" aria-label="Play narration: A modest push lands on the audio-playback branch. Three commits, no fuss, no announcement." title="A modest push lands on the audio-playback branch. Three commits, no fuss, no announcement.">▶</button> <span class="narration">"A modest push lands on the audio-playback branch…"</span>    <span class="b-magenta">│</span>
+<span class="b-magenta">│</span>                                                          <span class="b-magenta">│</span>
+<span class="b-magenta">│</span> <span class="dim">[09:22] 1 new event(s) detected</span>                          <span class="b-magenta">│</span>
+<span class="b-magenta">│</span>   Ragib - voice-synth                                    <span class="b-magenta">│</span>
+<span class="b-magenta">│</span> <button class="play" type="button" data-audio="audio/02.mp3" aria-label="Play narration: And here, surfacing at last from weeks of patient work — pull request forty-two. The voice synthesis fix, finally up for review." title="And here, surfacing at last from weeks of patient work — pull request forty-two. The voice synthesis fix, finally up for review.">▶</button> <span class="narration">"And here, surfacing at last from weeks of work…"</span>      <span class="b-magenta">│</span>
+<span class="b-magenta">│</span>                                                          <span class="b-magenta">│</span>
+<span class="b-magenta">│</span> <span class="dim">[09:38] 1 new event(s) detected</span>                          <span class="b-magenta">│</span>
+<span class="b-magenta">│</span>   Sam - narrator                                         <span class="b-magenta">│</span>
+<span class="b-magenta">│</span> <button class="play" type="button" data-audio="audio/03.mp3" aria-label="Play narration: An issue surfaces. Memory, it transpires, leaks from the narrator on long runs. A familiar pattern. Now, a tracked one." title="An issue surfaces. Memory, it transpires, leaks from the narrator on long runs. A familiar pattern. Now, a tracked one.">▶</button> <span class="narration">"An issue surfaces — memory leaks on long runs…"</span>       <span class="b-magenta">│</span>
+<span class="b-magenta">│</span>                                                          <span class="b-magenta">│</span>
+<span class="b-magenta">│</span> <span class="dim">[09:51] 1 new event(s) detected</span>                          <span class="b-magenta">│</span>
+<span class="b-magenta">│</span>   Ragib - voice-synth                                    <span class="b-magenta">│</span>
+<span class="b-magenta">│</span> <button class="play" type="button" data-audio="audio/04.mp3" aria-label="Play narration: Quietly, forty-two slips into main. The fix takes its place. The voice is whole again." title="Quietly, forty-two slips into main. The fix takes its place. The voice is whole again.">▶</button> <span class="narration">"Quietly, forty-two slips into main. The fix takes…"</span>   <span class="b-magenta">│</span>
+<span class="b-magenta">│</span>                                                          <span class="b-magenta">│</span>
+<span class="b-magenta">│</span> <span class="dim">[10:04] 1 new event(s) detected</span>                          <span class="b-magenta">│</span>
+<span class="b-magenta">│</span>   Ale - skald                                            <span class="b-magenta">│</span>
+<span class="b-magenta">│</span> <button class="play" type="button" data-audio="audio/05.mp3" aria-label="Play narration: Version one point two zero — released into the wild. A few stones on the cairn. Onward." title="Version one point two zero — released into the wild. A few stones on the cairn. Onward.">▶</button> <span class="narration">"Version one point two zero — released…"</span>               <span class="b-magenta">│</span>
+<span class="b-magenta">╰──────────────────────────────────────────────────────────╯</span></pre>
+<pre class="tui-panel"><span class="b-green">╭──────────────────────────────────────────────────────────╮</span>
+<span class="b-green">│</span> [↑↓] select [c] copy [t] test [r] replay [m] mute        <span class="b-green">│</span>
+<span class="b-green">╰──────────────────────────────────────────────────────────╯</span></pre>
   </div>
 </section>
 
@@ -254,24 +320,41 @@ bun start</pre>
   <p class="followup">Configure GitHub or GitLab feeds and a chat + speech provider in <code>skald.yaml</code>. Bring your own keys for OpenAI, Gemini, Ollama, or the local <code>claude</code> CLI.</p>
 </section>
 
-<section class="container">
+<section class="container" id="features">
   <h2>Features</h2>
+  <p style="color: var(--muted); margin-bottom: 1.5rem;">Feed in, narration out, your speakers do the rest. Skald listens to GitHub and GitLab activity, hands each event to an LLM for a one-line story, and speaks it through a TTS provider of your choosing.</p>
   <div class="features">
     <div class="feature">
       <h3>GitHub &amp; GitLab</h3>
-      <p>Polls feeds from either platform with a unified event model. No webhooks, no inbound network needed.</p>
+      <p>Polls the GitHub events API or GitLab Atom feeds with a unified event model. No webhooks, no inbound network needed.</p>
+    </div>
+    <div class="feature">
+      <h3>Plug-in narration</h3>
+      <p>Any OpenAI-compatible chat API — OpenAI, OpenRouter, Ollama, LM Studio — or the local <code>claude</code> CLI. Bring your own model.</p>
+    </div>
+    <div class="feature">
+      <h3>Plug-in voice</h3>
+      <p>OpenAI-compatible TTS endpoints or Google Gemini TTS. Pick the voice that fits the room.</p>
     </div>
     <div class="feature">
       <h3>Live commentary</h3>
-      <p>Events become natural-language narrations — not robotic notification pings.</p>
+      <p>Events become natural-language narrations with a tunable personality — not robotic notification pings.</p>
     </div>
     <div class="feature">
-      <h3>Voice agnostic</h3>
-      <p>Pluggable TTS backends. System voices, ElevenLabs, OpenAI, or anything that speaks.</p>
+      <h3>Terminal dashboard</h3>
+      <p>Five-panel Ink UI: author leaderboard, project distribution, the live narration feed, and a chat history log.</p>
     </div>
     <div class="feature">
-      <h3>Tunable</h3>
-      <p>Filter events, adjust verbosity, write your own narration templates. Make it dry, dramatic, or anywhere between.</p>
+      <h3>Catch-up on boot</h3>
+      <p>Missed events from the last run get fetched and summarised aloud before live monitoring resumes.</p>
+    </div>
+    <div class="feature">
+      <h3>First-run learning</h3>
+      <p>Skald scans your feed history and prompts you to name authors and projects. Saved back to config for richer narration context.</p>
+    </div>
+    <div class="feature">
+      <h3>Tunable run modes</h3>
+      <p>Filter event types, swap providers, set personality. Run <code>--text-only</code> for silent text, <code>--dry-run</code> to fetch without narrating.</p>
     </div>
   </div>
 </section>
@@ -291,7 +374,7 @@ bun start</pre>
 <script>
 (() => {
   let active = null;
-  for (const btn of document.querySelectorAll(".transcript .play")) {
+  for (const btn of document.querySelectorAll(".tui .play")) {
     const audio = new Audio(btn.getAttribute("data-audio"));
     audio.preload = "none";
     const reset = () => { btn.classList.remove("playing"); btn.textContent = "▶"; if (active && active.audio === audio) active = null; };
@@ -299,7 +382,7 @@ bun start</pre>
     audio.addEventListener("pause", () => { if (audio.currentTime === 0) reset(); });
     btn.addEventListener("click", () => {
       if (active && active.audio !== audio) { active.audio.pause(); active.audio.currentTime = 0; }
-      if (audio.paused) { audio.play().catch(() => reset()); btn.classList.add("playing"); btn.textContent = "❚❚"; active = { audio, btn }; }
+      if (audio.paused) { audio.play().catch(() => reset()); btn.classList.add("playing"); btn.textContent = "■"; active = { audio, btn }; }
       else { audio.pause(); audio.currentTime = 0; }
     });
   }

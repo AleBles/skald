@@ -16,6 +16,19 @@ AI voice narrator for repo activity. Polls GitHub or GitLab feeds and narrates e
 
 > _Skald (Old Norse): a poet who composed and recited verse at the courts of Scandinavian kings - the original release-notes engine._
 
+## Features
+
+- **GitHub or GitLab** - polls the REST events API (GitHub) or Atom feeds (GitLab). No webhooks, no inbound network.
+- **Event coverage** - pushes, merges, PRs opened/closed, comments, releases, issues, pipelines, packages.
+- **Narration backends** - any OpenAI-compatible chat API (OpenAI, OpenRouter, Ollama, LM Studio) or the local `claude` CLI.
+- **Speech backends** - any OpenAI-compatible TTS endpoint, or Google Gemini TTS. Bring your own voice.
+- **Terminal dashboard** - Ink-based five-panel UI with author leaderboard, project distribution, live narration feed, and chat history.
+- **Catch-up on boot** - fetches everything since the last run and speaks a summary before going live.
+- **First-run learning** - scans feed history and prompts you to name each author and project; saved back to config for richer narration context.
+- **Keyboard control** - replay, mute, copy narration to clipboard, manual test fetch.
+- **Run modes** - `--text-only` (no audio), `--dry-run` (no narration), `--config <path>` for explicit config.
+- **Personality** - tune verbosity, tone, and a free-form personality prompt to make it dry, dramatic, or anywhere between.
+
 ## Install
 
 Download a prebuilt binary for your platform from the [latest release](https://github.com/alebles/skald/releases/latest), or run from source:
@@ -178,36 +191,6 @@ See [`config.example.yaml`](config.example.yaml) for every option.
 5. `~/.config/skald/config.yaml`
 
 Or pass `--config <path>` explicitly.
-
-## Project structure
-
-```
-src/
-├── index.ts                - entry point, CLI args, bootstrap
-├── config/
-│   ├── types.ts            - Config, AuthorInfo, ProjectInfo
-│   └── loader.ts           - loadConfig, saveConfig, validation
-├── feed/
-│   ├── types.ts            - FeedEvent, FeedProvider, FeedConfig
-│   ├── atom.ts             - generic Atom XML parser
-│   ├── gitlab.ts           - GitLabFeedProvider (Atom)
-│   ├── github.ts           - GitHubFeedProvider (REST events API)
-│   └── index.ts            - createFeedProvider factory
-├── narrator/
-│   ├── types.ts            - NarrationResult
-│   └── narrator.ts         - prompt building, chat API, history tracking
-├── providers/
-│   ├── types.ts            - ChatProvider, SpeechProvider, configs
-│   ├── openai.ts           - OpenAI-compatible chat + TTS
-│   ├── claude-code.ts      - shells out to local `claude` CLI
-│   ├── gemini.ts           - Google Gemini TTS
-│   └── index.ts            - createChatProvider, createSpeechProvider
-├── voice/
-│   └── voice.ts            - TTS playback (mp3/wav)
-└── ui/
-    ├── App.tsx             - orchestration, state, effects
-    └── components/         - BarChart, BorderBox, ChatLog, HelpBar, ...
-```
 
 ## Development
 
