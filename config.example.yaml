@@ -67,7 +67,8 @@ providers:
 
   # Text-to-speech - used for voice narration
   # Two types supported:
-  #   type: openai  - any OpenAI-compatible /v1/audio/speech endpoint
+  #   type: openai  - any OpenAI-compatible /v1/audio/speech endpoint, cloud or
+  #                   local (e.g. Kokoro-FastAPI)
   #   type: gemini  - Google Gemini TTS via generativelanguage.googleapis.com.
   #                   Returns 24kHz PCM that we wrap into WAV locally. Speed is
   #                   emulated via natural-language style hints.
@@ -85,6 +86,14 @@ providers:
     # model: gemini-2.5-flash-preview-tts
     # voice: Kore                    # Zephyr, Puck, Charon, Kore, Fenrir, Leda, Orus, Aoede, ...
     # speed: 1.0
+
+    # Example: local Kokoro via Kokoro-FastAPI, no API key
+    # (docker run -d -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-cpu:latest)
+    # type: openai
+    # base_url: http://localhost:8880/v1
+    # api_key: not-needed
+    # model: kokoro
+    # voice: af_heart                # curl localhost:8880/v1/audio/voices
 
 narrator:
   # Personality prompt for the AI narrator
