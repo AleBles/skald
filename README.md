@@ -14,14 +14,15 @@
 
 AI voice narrator for repo activity. Polls GitHub or GitLab feeds and narrates events like a live commentator over your speakers.
 
-> _Skald (Old Norse): a poet who composed and recited verse at the courts of Scandinavian kings - the original release-notes engine._
+> _"Then began I to thrive, and wisdom to get; a word from a word gave words to me, a deed from a deed gave deeds to me."_
+> — Hávamál, of the winning of the poet's art
 
 ## Features
 
 - **GitHub or GitLab** - polls the REST events API (GitHub) or Atom feeds (GitLab). No webhooks, no inbound network.
 - **Event coverage** - pushes, merges, PRs opened/closed, comments, releases, issues, pipelines, packages.
 - **Narration backends** - any OpenAI-compatible chat API (OpenAI, OpenRouter, Ollama, LM Studio) or the local `claude` CLI.
-- **Speech backends** - any OpenAI-compatible TTS endpoint, or Google Gemini TTS. Bring your own voice.
+- **Speech backends** - any OpenAI-compatible TTS endpoint, cloud or local (Kokoro, Qwen3-TTS), or Google Gemini TTS. Bring your own voice.
 - **Terminal dashboard** - Ink-based five-panel UI with author leaderboard, project distribution, live narration feed, and chat history.
 - **Catch-up on boot** - fetches everything since the last run and speaks a summary before going live.
 - **First-run learning** - scans feed history and prompts you to name each author and project; saved back to config for richer narration context.
@@ -50,7 +51,7 @@ cp config.example.yaml skald.yaml
 You'll need:
 - A **feed source** - GitHub (optional Personal Access Token) or GitLab (Feed token from User Settings)
 - A **chat provider** for narration - any OpenAI-compatible API (OpenAI, OpenRouter, Ollama, ...) or the local `claude` CLI
-- A **speech provider** for voice - any OpenAI-compatible TTS endpoint, or Google Gemini
+- A **speech provider** for voice - any OpenAI-compatible TTS endpoint (cloud, or a local Kokoro server), or Google Gemini
 
 ### Recipe 1: GitHub + OpenAI
 
@@ -113,6 +114,39 @@ providers:
     model: gemini-2.5-flash-preview-tts
     voice: Kore
 ```
+
+### Recipe 4: Fully local (Ollama + Kokoro, no API keys)
+
+Run [Kokoro-FastAPI](https://github.com/remsky/Kokoro-FastAPI) as a local OpenAI-compatible TTS server. The CPU image is fast enough for live narration; use the `-gpu` image if you have an NVIDIA card.
+
+```bash
+docker run -d -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-cpu:latest
+```
+
+```yaml
+providers:
+  chat:
+    type: openai
+    base_url: http://localhost:11434/v1
+    api_key: ollama
+    model: llama3.2
+  speech:
+    type: openai
+    base_url: http://localhost:8880/v1
+    api_key: not-needed
+    model: kokoro
+    voice: af_heart
+```
+
+List voices with `curl localhost:8880/v1/audio/voices`.
+
+Prefer Qwen3-TTS? [qwen3-tts-server](https://github.com/malaiwah/qwen3-tts-server) exposes the same API on port 8001 with `model: tts-1` and voices such as `ryan`, `serena`, and `vivian`. It needs an NVIDIA GPU with at least 6 GB of VRAM for live narration; on CPU a single line takes around 25 seconds to synthesize.
+
+```bash
+docker run -d --gpus all -p 8001:8001 -v qwen3-hf-cache:/root/.cache/huggingface ghcr.io/malaiwah/qwen3-tts-server:latest
+```
+
+Any other OpenAI-compatible TTS server works the same way; only `base_url`, `model`, and `voice` change.
 
 ## Usage
 

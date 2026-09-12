@@ -11,8 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" href="favicon.svg">
 
-<meta name="theme-color" content="#faf6ed" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#0b0a1a">
 
 <meta property="og:title" content="skald — AI voice narrator for repo activity">
 <meta property="og:description" content="Turns GitHub or GitLab events into spoken commentary. Pluggable AI chat, pluggable TTS, no webhooks.">
@@ -45,143 +44,159 @@
 }
 </script>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+  /* ==========================================================================
+     skald.bles.nu — synthwave / terminal theme, in line with ale.bles.nu
+     ========================================================================== */
   :root {
-    --bg: #faf6ed;
-    --surface: #f3ecd9;
-    --text: #0f172a;
-    --muted: #64748b;
-    --accent: #d97706;
-    --border: rgba(15, 23, 42, 0.08);
-    --code-bg: #0f172a;
-    --code-text: #faf6ed;
+    --bg: #0b0a1a;
+    --bg-2: #1a1040;
+    --surface: rgba(16, 14, 36, 0.92);
+    --surface-2: #1c1940;
+    --border: rgba(157, 107, 255, 0.28);
+
+    --magenta: #ff4fd8;
+    --cyan: #3df5ff;
+    --purple: #9d6bff;
+    --amber: #ffb347;
+    --text: #e6e4f5;
+    --muted: #a39fc4;
+    --grid-line: rgba(61, 245, 255, 0.22);
+
+    --glow-cyan: 0 0 8px rgba(61, 245, 255, 0.55), 0 0 24px rgba(61, 245, 255, 0.25);
+    --glow-magenta: 0 0 8px rgba(255, 79, 216, 0.55), 0 0 24px rgba(255, 79, 216, 0.25);
+
+    /* terminal dashboard */
+    --tui-bg: #0f0d24;
     --tui-blue: #60a5fa;
     --tui-yellow: #facc15;
-    --tui-red: #f87171;
-    --tui-magenta: #f0abfc;
+    --tui-red: #ff5c57;
+    --tui-magenta: #ff4fd8;
     --tui-green: #4ade80;
-    --tui-cyan: #67e8f9;
-    --tui-dim: rgba(250, 246, 237, 0.5);
+    --tui-cyan: #3df5ff;
+    --tui-dim: rgba(230, 228, 245, 0.45);
+
+    --radius: 8px;
+    --radius-sm: 4px;
+    --content-max: 820px;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Fira Code", Menlo, Consolas, "Courier New", monospace;
+    --scanline-opacity: 0.045;
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0f172a;
-      --surface: #1e293b;
-      --text: #faf6ed;
-      --muted: #94a3b8;
-      --accent: #f59e0b;
-      --border: rgba(250, 246, 237, 0.1);
-      --code-bg: #1e293b;
-      --code-text: #faf6ed;
-    }
-  }
-
-  html { font-size: 16px; }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { color-scheme: dark; -webkit-text-size-adjust: 100%; }
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    line-height: 1.6;
-    color: var(--text);
-    background: var(--bg);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    margin: 0; min-height: 100vh;
+    font-family: var(--font-mono);
+    font-size: clamp(15px, 0.9vw + 12px, 17px);
+    line-height: 1.6; color: var(--text); background: var(--bg);
+    position: relative; isolation: isolate;
   }
+  img { max-width: 100%; display: block; }
+  a { color: var(--cyan); }
 
-  .container { max-width: 760px;
-    /*padding: 0 1.5rem;*/
-    margin: 14px auto 0;
+  /* ---------- backdrop ---------- */
+  .backdrop { position: fixed; inset: 0; z-index: -1; overflow: hidden;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 40%, #2a0f4a 52%, #120b2a 60%, var(--bg) 100%); }
+  .backdrop__glow { position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 40% at 50% 30%, rgba(255, 79, 216, 0.34), rgba(255, 79, 216, 0) 70%); }
+  .backdrop__sun {
+    position: absolute; left: 50%; top: 8%; width: min(60vw, 420px); aspect-ratio: 1;
+    translate: -50% 0; border-radius: 50%;
+    background: linear-gradient(180deg, var(--amber) 0%, var(--magenta) 55%, var(--purple) 100%);
+    opacity: 0.55; filter: blur(1px);
+    -webkit-mask-image: linear-gradient(to bottom, #000 0 48%, transparent 48% 51%, #000 51% 58%, transparent 58% 61%, #000 61% 68%, transparent 68% 72%, #000 72% 80%, transparent 80% 86%, #000 86% 100%);
+    mask-image: linear-gradient(to bottom, #000 0 48%, transparent 48% 51%, #000 51% 58%, transparent 58% 61%, #000 61% 68%, transparent 68% 72%, #000 72% 80%, transparent 80% 86%, #000 86% 100%);
   }
+  .backdrop__grid {
+    position: absolute; left: -50%; right: -50%; top: 42%; height: 130%;
+    background-image:
+      repeating-linear-gradient(90deg, var(--grid-line) 0 1px, transparent 1px 64px),
+      repeating-linear-gradient(0deg, var(--grid-line) 0 1px, transparent 1px 64px);
+    background-size: 64px 64px; transform-origin: top center;
+    transform: perspective(480px) rotateX(62deg);
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.6) 40%, transparent 85%);
+    mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.6) 40%, transparent 85%);
+    animation: grid-scroll 4s linear infinite;
+  }
+  @keyframes grid-scroll { to { background-position: 0 0, 0 64px; } }
+  body::after {
+    content: ""; position: fixed; inset: 0; z-index: 50; pointer-events: none;
+    background: repeating-linear-gradient(to bottom, rgba(0,0,0,var(--scanline-opacity)) 0 1px, transparent 1px 3px);
+  }
+  :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; box-shadow: 0 0 0 5px rgba(61,245,255,0.25); }
 
-  h1, h2, h3 { font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; }
-  h2 { font-size: 1.375rem; margin-bottom: 1.25rem; }
-  h3 { font-size: 1.0625rem; margin-bottom: 0.375rem; }
-  p { margin-bottom: 0.75rem; }
-  p:last-child { margin-bottom: 0; }
+  /* ---------- top bar ---------- */
+  .topbar {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 8px 24px; max-width: var(--content-max); margin: 0 auto; padding: 16px;
+  }
+  .brand { color: var(--cyan); text-decoration: none; font-weight: 600; letter-spacing: 0.02em; text-shadow: var(--glow-cyan); white-space: nowrap; }
+  .brand__path { color: var(--muted); font-weight: 400; text-shadow: none; }
+  .cursor { display: inline-block; margin-left: 1px; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .topnav { display: flex; flex-wrap: wrap; gap: 4px 8px; }
+  .topnav a { color: var(--muted); text-decoration: none; padding: 4px 8px; border-radius: var(--radius-sm); transition: color 0.15s ease; }
+  .topnav a::before { content: "./"; opacity: 0.5; }
+  .topnav a:hover { color: var(--cyan); }
+
+  /* ---------- layout ---------- */
+  .page { max-width: var(--content-max); margin: 0 auto; padding: 0 16px 48px; }
+  section { padding: 28px 0; }
+  .surface {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+  }
+  .window__bar { display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--border); }
+  .tl { width: 10px; height: 10px; border-radius: 50%; background: var(--magenta); box-shadow: 0 0 6px currentColor; color: var(--magenta); }
+  .tl:nth-child(2) { background: var(--amber); color: var(--amber); }
+  .tl:nth-child(3) { background: var(--cyan); color: var(--cyan); }
+  .window__title { margin-left: 8px; color: var(--muted); font-size: 0.8em; }
 
   /* ---------- hero ---------- */
-  .hero { text-align: center; padding: 2rem 0; }
-  .hero-mark { width: 96px; margin: 0 auto 2rem; display: block; }
+  .hero { text-align: center; padding: 28px 16px 8px; }
+  .hero-mark { width: 86px; height: 108px; margin: 0 auto 20px; display: block; }
+  .hero-mark .rune { stroke: var(--cyan); filter: drop-shadow(0 0 6px rgba(61,245,255,0.6)); }
+  .hero-mark .arc { stroke: var(--magenta); filter: drop-shadow(0 0 6px rgba(255,79,216,0.6)); }
   .hero h1 {
-    font-size: clamp(3.5rem, 8vw, 5rem);
-    letter-spacing: -0.05em;
-    margin-bottom: 0.75rem;
-    font-weight: 500;
+    margin: 0 0 12px; font-size: clamp(2.6rem, 7vw, 3.6rem); font-weight: 600; line-height: 1.1;
+    color: var(--magenta); text-shadow: var(--glow-magenta); letter-spacing: 0.02em;
   }
-  .hero .tagline {
-    font-size: 1.125rem;
-    color: var(--muted);
-    max-width: 480px;
-    margin: 0 auto 2.5rem;
-  }
-  .cta-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  .hero h1::before { content: "> "; color: var(--cyan); text-shadow: var(--glow-cyan); }
+  .hero .tagline { color: var(--muted); max-width: 560px; margin: 0 auto 24px; }
+  .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
   .cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.9375rem;
-    transition: opacity 0.15s, transform 0.15s;
-    border: 1px solid transparent;
+    display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius);
+    text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: inherit;
+    border: 1px solid transparent; transition: transform 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
   }
-  .cta:hover { transform: translateY(-1px); }
-  .cta-primary { background: var(--text); color: var(--bg); }
-  .cta-primary:hover { opacity: 0.9; }
-  .cta-secondary { background: transparent; color: var(--text); border-color: var(--border); }
-  .cta-secondary:hover { background: var(--surface); }
+  .cta:hover { transform: translateY(-2px); }
+  .cta-primary { border-color: var(--cyan); color: var(--cyan); text-shadow: var(--glow-cyan); }
+  .cta-primary:hover { box-shadow: var(--glow-cyan); }
+  .cta-secondary { border-color: var(--border); color: var(--muted); }
+  .cta-secondary:hover { color: var(--cyan); border-color: var(--cyan); }
 
-  /* ---------- sections ---------- */
-  section { padding: 2rem 0; border-top: 1px solid var(--border); }
+  /* ---------- prompt headings ---------- */
+  .prompt { text-transform: lowercase; color: var(--cyan); font-weight: 600; font-size: 1.5em; margin: 0 0 24px; padding-bottom: 8px; border-bottom: 1px dashed var(--border); }
+  .prompt::before { content: "> "; color: var(--magenta); text-shadow: var(--glow-magenta); }
+  .lead { color: var(--muted); margin: 0 0 20px; }
 
-  /* ---------- tui dashboard ---------- */
-  .tui {
-    background: var(--code-bg);
-    color: var(--code-text);
-    border-radius: 12px;
-    padding: 1.25rem 1.5rem;
-    overflow-x: auto;
-    container-type: inline-size;
-  }
+  /* ---------- terminal dashboard ---------- */
+  .tui { background: var(--tui-bg); border-radius: 0 0 var(--radius) var(--radius); padding: 16px 18px; overflow-x: auto; container-type: inline-size; }
   .tui-panel {
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
-    /* 60 chars wide at ~0.6em per char = 36em. Size font so 36em == container content width. */
+    font-family: var(--font-mono);
     font-size: clamp(0.7rem, calc(100cqi / 36), 1.3rem);
-    line-height: 1.4;
-    margin: 0;
-    color: var(--code-text);
-    white-space: pre;
-    background: transparent;
-    padding: 0;
-    overflow: hidden;
+    line-height: 1.4; margin: 0; color: var(--text); white-space: pre; background: transparent; padding: 0; overflow: hidden;
   }
-  .tui .b-blue    { color: var(--tui-blue); }
-  .tui .b-yellow  { color: var(--tui-yellow); }
-  .tui .b-red     { color: var(--tui-red); }
-  .tui .b-magenta { color: var(--tui-magenta); }
-  .tui .b-green   { color: var(--tui-green); }
-  .tui .bar-y     { color: var(--tui-yellow); }
-  .tui .bar-r     { color: var(--tui-red); }
-  .tui .narration { color: var(--tui-cyan); }
-  .tui .dim       { color: var(--tui-dim); }
+  .tui .b-blue { color: var(--tui-blue); } .tui .b-yellow { color: var(--tui-yellow); }
+  .tui .b-red { color: var(--tui-red); } .tui .b-magenta { color: var(--tui-magenta); }
+  .tui .b-green { color: var(--tui-green); }
+  .tui .bar-y { color: var(--tui-yellow); } .tui .bar-r { color: var(--tui-red); }
+  .tui .narration { color: var(--tui-cyan); } .tui .dim { color: var(--tui-dim); }
   .tui .play {
-    display: inline-block;
-    width: 1ch;
-    text-align: center;
-    background: transparent;
-    border: 0;
-    color: var(--tui-cyan);
-    padding: 0;
-    font: inherit;
-    line-height: inherit;
-    cursor: pointer;
+    display: inline-block; width: 1ch; text-align: center; background: transparent; border: 0;
+    color: var(--tui-cyan); padding: 0; font: inherit; line-height: inherit; cursor: pointer;
     transition: transform 0.15s, opacity 0.15s;
   }
   .tui .play:hover { transform: scale(1.2); }
@@ -191,63 +206,67 @@
 
   /* ---------- code ---------- */
   pre {
-    background: var(--code-bg);
-    color: var(--code-text);
-    padding: 1.25rem 1.5rem;
-    border-radius: 12px;
-    overflow-x: auto;
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
-    font-size: 0.875rem;
-    line-height: 1.7;
+    background: var(--surface-2); border: 1px solid var(--border); border-left: 3px solid var(--cyan);
+    border-radius: var(--radius-sm); padding: 16px; overflow-x: auto; font-size: 0.85em; line-height: 1.7; margin: 0;
+    font-family: var(--font-mono);
   }
-  pre .comment { color: rgba(250, 246, 237, 0.45); }
-  .followup { margin-top: 1rem; color: var(--muted); font-size: 0.9375rem; }
+  pre .comment { color: var(--muted); }
+  code { background: rgba(157,107,255,0.15); color: var(--text); padding: 1px 5px; border-radius: 3px; font-size: 0.9em; font-family: var(--font-mono); }
+  .followup { margin-top: 16px; color: var(--muted); font-size: 0.92em; }
 
   /* ---------- features ---------- */
-  .features {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 2rem 2.5rem;
-    margin-top: 1.5rem;
+  .card-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; margin-top: 8px; }
+  .card {
+    background: var(--surface-2); border: 1px solid var(--border); border-left: 3px solid var(--magenta);
+    border-radius: var(--radius-sm); padding: 16px 18px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   }
-  .feature h3 { color: var(--accent); }
-  .feature p { color: var(--muted); font-size: 0.9375rem; line-height: 1.55; }
+  .card:hover { border-left-color: var(--cyan); box-shadow: var(--glow-cyan); transform: translateY(-2px); }
+  .card h3 { margin: 0 0 6px; font-size: 1.02em; color: var(--text); }
+  .card p { margin: 0; color: var(--muted); font-size: 0.92em; line-height: 1.55; }
 
   /* ---------- footer ---------- */
-  footer {
-    text-align: center;
-    padding: 3rem 1.5rem 4rem;
-    color: var(--muted);
-    font-size: 0.875rem;
-    border-top: 1px solid var(--border);
-  }
-  footer p + p { margin-top: 0.375rem; }
-  footer a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); }
-  footer a:hover { border-color: var(--text); }
-  .rune-divider {
-    display: block;
-    margin: 0 auto 1.25rem;
-    color: var(--muted);
-    opacity: 0.4;
-  }
+  .footer { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 0.85em; }
+  .footer .legend { max-width: 520px; margin: 0 auto 6px; font-style: italic; }
+  .footer .cite { font-size: 0.9em; }
+  .footer .links { margin-top: 16px; }
+  .footer a { color: var(--muted); text-decoration: none; }
+  .footer a:hover { color: var(--cyan); }
+  .footer .rune-divider { display: block; margin: 0 auto 16px; opacity: 0.7; }
+  .footer .rune-divider .rune { stroke: var(--cyan); }
+  .footer .rune-divider .arc { stroke: var(--magenta); }
 
-  .hero-mark .rune { stroke: currentColor; }
-  .hero-mark .arc { stroke: var(--accent); }
-
-  code {
-    font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
-    background: var(--surface);
-    padding: 0.1rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.875em;
+  @media (prefers-reduced-motion: reduce) {
+    .backdrop__grid, .cursor { animation: none; }
+    .cta, .card, .topnav a, .tui .play { transition: none; }
+    .cta:hover, .card:hover { transform: none; }
+  }
+  @media (max-width: 640px) {
+    .brand { flex-basis: 100%; }
+    .backdrop__grid { background-size: 48px 48px; }
   }
 </style>
 </head>
 <body>
 
+<div class="backdrop" aria-hidden="true">
+  <div class="backdrop__glow"></div>
+  <div class="backdrop__sun"></div>
+  <div class="backdrop__grid"></div>
+</div>
+
+<header class="topbar">
+  <a class="brand" href="https://ale.bles.nu">ale.bles.nu<span class="brand__path">/skald</span><span class="cursor">_</span></a>
+  <nav class="topnav">
+    <a href="https://github.com/AleBles/skald">github</a>
+    <a href="#quickstart">install</a>
+    <a href="https://ale.bles.nu">ale.bles.nu</a>
+  </nav>
+</header>
+
 <main>
 
-<header class="hero container">
+<section class="hero">
   <svg class="hero-mark" viewBox="-12 -12 144 164" fill="none" aria-label="skald logo">
     <line class="rune" x1="0" y1="0" x2="0" y2="140" stroke-width="18" stroke-linecap="round"/>
     <line class="rune" x1="0" y1="20" x2="60" y2="55" stroke-width="18" stroke-linecap="round"/>
@@ -262,12 +281,16 @@
     <a class="cta cta-primary" href="https://github.com/AleBles/skald">View on GitHub →</a>
     <a class="cta cta-secondary" href="#quickstart">Quick start</a>
   </div>
-</header>
+</section>
 
-<section class="container" id="sounds">
-  <h2>What it sounds like</h2>
-  <p style="color: var(--muted); margin-bottom: 1.5rem;">A typical morning of activity, narrated. Click <span style="color: var(--tui-cyan, #67e8f9);">▶</span> to play any sample.</p>
-  <div class="tui" role="img" aria-label="Skald terminal dashboard with five narration samples">
+<div class="page">
+
+<section id="sounds">
+  <h2 class="prompt">what it sounds like</h2>
+  <p class="lead">A typical morning of activity, narrated. Click <span style="color: var(--tui-cyan);">▶</span> to play any sample.</p>
+  <div class="surface">
+    <div class="window__bar"><span class="tl"></span><span class="tl"></span><span class="tl"></span><span class="window__title">skald — live</span></div>
+    <div class="tui" role="img" aria-label="Skald terminal dashboard with five narration samples">
 <pre class="tui-panel"><span class="b-blue">╭─ skald ──────────────────────────────────────────────────╮</span>
 <span class="b-blue">│</span> Skald v0.5.0 - AI voice narrator for repo activity       <span class="b-blue">│</span>
 <span class="b-blue">│</span> Source: github  Feeds: oven-sh/bun  Poll: 30s            <span class="b-blue">│</span>
@@ -302,11 +325,12 @@
 <pre class="tui-panel"><span class="b-green">╭──────────────────────────────────────────────────────────╮</span>
 <span class="b-green">│</span> [↑↓] select [c] copy [t] test [r] replay [m] mute        <span class="b-green">│</span>
 <span class="b-green">╰──────────────────────────────────────────────────────────╯</span></pre>
+    </div>
   </div>
 </section>
 
-<section class="container" id="quickstart">
-  <h2>Quick start</h2>
+<section id="quickstart">
+  <h2 class="prompt">quick start</h2>
 <pre><span class="comment"># clone and install</span>
 git clone https://github.com/AleBles/skald
 cd skald
@@ -317,59 +341,39 @@ cp config.example.yaml skald.yaml
 
 <span class="comment"># start narrating</span>
 bun start</pre>
-  <p class="followup">Configure GitHub or GitLab feeds and a chat + speech provider in <code>skald.yaml</code>. Bring your own keys for OpenAI, Gemini, Ollama, or the local <code>claude</code> CLI.</p>
+  <p class="followup">Configure GitHub or GitLab feeds and a chat + speech provider in <code>skald.yaml</code>. Bring your own keys for OpenAI or Gemini, or go fully local with Ollama, Kokoro, and the <code>claude</code> CLI.</p>
 </section>
 
-<section class="container" id="features">
-  <h2>Features</h2>
-  <p style="color: var(--muted); margin-bottom: 1.5rem;">Feed in, narration out, your speakers do the rest. Skald listens to GitHub and GitLab activity, hands each event to an LLM for a one-line story, and speaks it through a TTS provider of your choosing.</p>
-  <div class="features">
-    <div class="feature">
-      <h3>GitHub &amp; GitLab</h3>
-      <p>Polls the GitHub events API or GitLab Atom feeds with a unified event model. No webhooks, no inbound network needed.</p>
-    </div>
-    <div class="feature">
-      <h3>Plug-in narration</h3>
-      <p>Any OpenAI-compatible chat API — OpenAI, OpenRouter, Ollama, LM Studio — or the local <code>claude</code> CLI. Bring your own model.</p>
-    </div>
-    <div class="feature">
-      <h3>Plug-in voice</h3>
-      <p>OpenAI-compatible TTS endpoints or Google Gemini TTS. Pick the voice that fits the room.</p>
-    </div>
-    <div class="feature">
-      <h3>Live commentary</h3>
-      <p>Events become natural-language narrations with a tunable personality — not robotic notification pings.</p>
-    </div>
-    <div class="feature">
-      <h3>Terminal dashboard</h3>
-      <p>Five-panel Ink UI: author leaderboard, project distribution, the live narration feed, and a chat history log.</p>
-    </div>
-    <div class="feature">
-      <h3>Catch-up on boot</h3>
-      <p>Missed events from the last run get fetched and summarised aloud before live monitoring resumes.</p>
-    </div>
-    <div class="feature">
-      <h3>First-run learning</h3>
-      <p>Skald scans your feed history and prompts you to name authors and projects. Saved back to config for richer narration context.</p>
-    </div>
-    <div class="feature">
-      <h3>Tunable run modes</h3>
-      <p>Filter event types, swap providers, set personality. Run <code>--text-only</code> for silent text, <code>--dry-run</code> to fetch without narrating.</p>
-    </div>
+<section id="features">
+  <h2 class="prompt">features</h2>
+  <p class="lead">Feed in, narration out, your speakers do the rest. Skald listens to GitHub and GitLab activity, hands each event to an LLM for a one-line story, and speaks it through a TTS provider of your choosing.</p>
+  <div class="card-list">
+    <div class="card"><h3>GitHub &amp; GitLab</h3><p>Polls the GitHub events API or GitLab Atom feeds with a unified event model. No webhooks, no inbound network needed.</p></div>
+    <div class="card"><h3>Plug-in narration</h3><p>Any OpenAI-compatible chat API — OpenAI, OpenRouter, Ollama, LM Studio — or the local <code>claude</code> CLI. Bring your own model.</p></div>
+    <div class="card"><h3>Plug-in voice</h3><p>OpenAI-compatible TTS endpoints, a local Kokoro server, or Google Gemini TTS. Pick the voice that fits the room.</p></div>
+    <div class="card"><h3>Live commentary</h3><p>Events become natural-language narrations with a tunable personality — not robotic notification pings.</p></div>
+    <div class="card"><h3>Terminal dashboard</h3><p>Five-panel Ink UI: author leaderboard, project distribution, the live narration feed, and a chat history log.</p></div>
+    <div class="card"><h3>Catch-up on boot</h3><p>Missed events from the last run get fetched and summarised aloud before live monitoring resumes.</p></div>
+    <div class="card"><h3>First-run learning</h3><p>Skald scans your feed history and prompts you to name authors and projects. Saved back to config for richer narration.</p></div>
+    <div class="card"><h3>Tunable run modes</h3><p>Filter event types, swap providers, set personality. Run <code>--text-only</code> for silent text, <code>--dry-run</code> to fetch without narrating.</p></div>
   </div>
 </section>
 
-</main>
-
-<footer>
-  <svg class="rune-divider" width="22" height="26" viewBox="-2 -2 18 22" fill="none" aria-hidden="true">
-    <line x1="0" y1="0" x2="0" y2="18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="0" y1="3" x2="9" y2="7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="0" y1="7" x2="9" y2="11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+<footer class="footer">
+  <svg class="rune-divider" width="22" height="30" viewBox="-2 -2 22 34" fill="none" aria-hidden="true">
+    <line class="rune" x1="0" y1="0" x2="0" y2="26" stroke-width="2.5" stroke-linecap="round"/>
+    <line class="rune" x1="0" y1="4" x2="11" y2="10" stroke-width="2.5" stroke-linecap="round"/>
+    <line class="rune" x1="0" y1="10" x2="11" y2="16" stroke-width="2.5" stroke-linecap="round"/>
+    <path class="arc" d="M 15 9 A 4 4 0 0 1 15 17" stroke-width="2" stroke-linecap="round"/>
   </svg>
-  <p>Named for the Old Norse poet-narrators of court — keepers of deeds in verse.</p>
-  <p><a href="https://github.com/AleBles/skald">github.com/AleBles/skald</a></p>
+  <p class="legend">"Then began I to thrive, and wisdom to get; a word from a word gave words to me, a deed from a deed gave deeds to me."</p>
+  <p class="cite">— Hávamál, of the winning of the poet's art</p>
+  <p class="links"><a href="https://github.com/AleBles/skald">github.com/AleBles/skald</a> · <a href="https://ale.bles.nu">ale.bles.nu</a></p>
 </footer>
+
+</div>
+
+</main>
 
 <script>
 (() => {
